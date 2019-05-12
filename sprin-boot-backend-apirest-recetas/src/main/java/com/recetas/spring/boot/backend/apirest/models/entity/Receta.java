@@ -8,7 +8,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "receta")
@@ -19,6 +21,7 @@ public class Receta implements Serializable {
 	private long id;
 
 	@NotEmpty
+	@Size(min = 4, max = 30)
 	@Column(nullable = false)
 	private String nombre;
 	
@@ -30,15 +33,17 @@ public class Receta implements Serializable {
 	@Column(nullable = false)
 	private String dificultad;
 
-	@NotEmpty
+	@DecimalMin(value = "1")
 	@Column(nullable = false)
 	private int comensales;
 
 	@NotEmpty
+	@Size(min = 10)
 	@Column(nullable = false)
 	private String preparacion;
 
 	@NotEmpty
+	@Size(min = 4)
 	@Column(nullable = false)
 	private String ingredientes;
 	

@@ -1,5 +1,7 @@
 package com.recetas.spring.boot.backend.apirest.controller;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,12 +10,16 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,10 +29,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.deser.impl.CreatorCandidate.Param;
 import com.recetas.spring.boot.backend.apirest.models.entity.Receta;
 import com.recetas.spring.boot.backend.apirest.models.service.IRecetaService;
+import com.recetas.spring.boot.backend.apirest.models.service.IUploadFileService;
 
 @CrossOrigin(origins = { "http://localhost:4200" })
 @RestController
@@ -36,18 +46,22 @@ public class RecetaRestController {
 	@Autowired
 	private IRecetaService recetaService;
 
+	@Autowired
+	private IUploadFileService uploadService;
+
 	// Método GET que devuelve listado de todas las recetas de la BBDD
 	@GetMapping("/recetas")
 	public List<Receta> index() {
 		return recetaService.findAll();
 	}
-	
+
 	@GetMapping("/recetas/page/{page}")
 	public Page<Receta> index(@PathVariable Integer page) {
 		Pageable pageable = PageRequest.of(page, 6);
 		return recetaService.findAll(pageable);
 	}
 
+	@Secured({ "ROLE_ADMIN", "ROLE_USER" })
 	// Método GET que devuelve una receta buscada por ID
 	@GetMapping("/recetas/{id}")
 	// @ResponseStatus(HttpStatus.OK)
@@ -70,11 +84,13 @@ public class RecetaRestController {
 		return new ResponseEntity<Receta>(receta, HttpStatus.OK);
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	// Método POST que inserta una receta nueva
 	@PostMapping("/recetas")
 	public ResponseEntity<?> create(@Valid @RequestBody Receta receta, BindingResult result) {
 		Receta recetaNew = null;
 		Map<String, Object> response = new HashMap<>();
+		receta.setIngredientes(receta.getIngredientes().replace("null", ""));
 		if (result.hasErrors()) {
 			List<String> errors = result.getFieldErrors().stream()
 					.map(err -> "El campo '" + err.getField() + "' " + err.getDefaultMessage())
@@ -95,6 +111,7 @@ public class RecetaRestController {
 
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	// Método PUT que actualiza una receta
 	@PutMapping("/recetas/{id}")
 	public ResponseEntity<?> update(@Valid @RequestBody Receta receta, BindingResult result, @PathVariable Long id) {
@@ -132,10 +149,14 @@ public class RecetaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@DeleteMapping("/recetas/{id}")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
 		try {
+			Receta receta = recetaService.findById(id);
+			String nombreFotoAnterior = receta.getPath();
+			uploadService.eliminar(nombreFotoAnterior);
 			recetaService.delete(id);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al eliminar la receta en bd");
@@ -145,5 +166,68 @@ public class RecetaRestController {
 		response.put("mensaje", "La receta ha sido eliminado con éxito!");
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
+
+	@Secured({ "ROLE_ADMIN", "ROLE_USER" })
+	@PostMapping("/recetas/upload")
+	public ResponseEntity<?> upload(@RequestParam("archivo") MultipartFile archivo, @RequestParam("id") Long id) {
+		Map<String, Object> response = new HashMap<>();
+		Receta receta = recetaService.findById(id);
+
+		if (!archivo.isEmpty()) {
+			String nombreArchivo = null;
+			try {
+				nombreArchivo = uploadService.copiar(archivo);
+			} catch (IOException e) {
+				e.printStackTrace();
+				response.put("mensaje", "Error al subir la imagen de la receta");
+				response.put("error", e.getMessage().concat(": ").concat(e.getCause().getMessage()));
+				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+			String nombreFotoAnterior = receta.getPath();
+			uploadService.eliminar(nombreFotoAnterior);
+			receta.setPath(nombreArchivo);
+			recetaService.save(receta);
+			response.put("receta", receta);
+			response.put("mensaje", "Has subido correctamente la imagen: " + nombreArchivo);
+		}
+
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+	}
+
+	@GetMapping("/uploads/img/{nombreFoto:.+}")
+	public ResponseEntity<Resource> verFoto(@PathVariable String nombreFoto) {
+		Resource recurso = null;
+		try {
+			recurso = uploadService.cargar(nombreFoto);
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		HttpHeaders cabecera = new HttpHeaders();
+		cabecera.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + recurso.getFilename() + "\"");
+		return new ResponseEntity<Resource>(recurso, cabecera, HttpStatus.OK);
+	}
+
+	@GetMapping("/recetas/buscar/{termino}")
+	public ResponseEntity<?> buscarPorIngrediente(@PathVariable String termino) {
+		Map<String, Object> response = new HashMap<>();
+		List<Receta> listaRecetas = null;
+		listaRecetas = recetaService.findByIngredientesContaining(termino);
+		if (!listaRecetas.isEmpty()) {
+			response.put("mensaje", "Se han encontrado recetas con el " + termino + " buscados!");
+			response.put("receta", listaRecetas);
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+		}
+		response.put("mensaje", "No se han encontrado recetas con el termino facilitado!");
+		response.put("termino", termino);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+	}
+	
+	/*
+	@GetMapping("/recetas/page/{page}")
+	public Page<Receta> indexaa(@PathVariable Integer page) {
+		Pageable pageable = PageRequest.of(page, 6);
+		return recetaService.findAll(pageable);
+	}*/
 
 }

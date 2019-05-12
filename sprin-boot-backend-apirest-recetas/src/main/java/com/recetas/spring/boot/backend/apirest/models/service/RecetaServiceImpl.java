@@ -51,4 +51,16 @@ public class RecetaServiceImpl implements IRecetaService {
 		recetaDAO.deleteById(id);
 	}
 
+
+	@Override
+	public List<Receta> findByIngredientesContaining(String ingrediente) {		
+		return recetaDAO.findByIngredientesContaining(ingrediente);
+	}
+
+
+	@Override
+	public List<Receta> findByNombreContaining(String nombreReceta) {
+		return recetaDAO.findByNombreContaining(nombreReceta);
+	}
+
 }
