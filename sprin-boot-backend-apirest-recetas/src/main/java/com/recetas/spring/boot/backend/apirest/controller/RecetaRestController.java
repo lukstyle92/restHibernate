@@ -3,8 +3,10 @@ package com.recetas.spring.boot.backend.apirest.controller;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -14,6 +16,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -57,7 +60,7 @@ public class RecetaRestController {
 
 	@GetMapping("/recetas/page/{page}")
 	public Page<Receta> index(@PathVariable Integer page) {
-		Pageable pageable = PageRequest.of(page, 6);
+		Pageable pageable = PageRequest.of(page, 18);
 		return recetaService.findAll(pageable);
 	}
 
@@ -108,7 +111,6 @@ public class RecetaRestController {
 		response.put("mensaje", "La receta ha sido creado con éxito!");
 		response.put("receta", recetaNew);
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
-
 	}
 
 	@Secured({ "ROLE_ADMIN" })
@@ -155,9 +157,11 @@ public class RecetaRestController {
 		Map<String, Object> response = new HashMap<>();
 		try {
 			Receta receta = recetaService.findById(id);
-			String nombreFotoAnterior = receta.getPath();
-			uploadService.eliminar(nombreFotoAnterior);
-			recetaService.delete(id);
+			if (receta != null) {
+				String nombreFotoAnterior = receta.getPath();
+				uploadService.eliminar(nombreFotoAnterior);
+				recetaService.delete(id);
+			}
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al eliminar la receta en bd");
 			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
@@ -172,26 +176,28 @@ public class RecetaRestController {
 	public ResponseEntity<?> upload(@RequestParam("archivo") MultipartFile archivo, @RequestParam("id") Long id) {
 		Map<String, Object> response = new HashMap<>();
 		Receta receta = recetaService.findById(id);
-
-		if (!archivo.isEmpty()) {
-			String nombreArchivo = null;
-			try {
-				nombreArchivo = uploadService.copiar(archivo);
-			} catch (IOException e) {
-				e.printStackTrace();
-				response.put("mensaje", "Error al subir la imagen de la receta");
-				response.put("error", e.getMessage().concat(": ").concat(e.getCause().getMessage()));
-				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		if (receta != null) {
+			if (!archivo.isEmpty()) {
+				String nombreArchivo = null;
+				try {
+					nombreArchivo = uploadService.copiar(archivo);
+				} catch (IOException e) {
+					e.printStackTrace();
+					response.put("mensaje", "Error al subir la imagen de la receta");
+					response.put("error", e.getMessage().concat(": ").concat(e.getCause().getMessage()));
+					return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+				String nombreFotoAnterior = receta.getPath();
+				uploadService.eliminar(nombreFotoAnterior);
+				receta.setPath(nombreArchivo);
+				recetaService.save(receta);
+				response.put("receta", receta);
+				response.put("mensaje", "Has subido correctamente la imagen: " + nombreArchivo);
+				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 			}
-			String nombreFotoAnterior = receta.getPath();
-			uploadService.eliminar(nombreFotoAnterior);
-			receta.setPath(nombreArchivo);
-			recetaService.save(receta);
-			response.put("receta", receta);
-			response.put("mensaje", "Has subido correctamente la imagen: " + nombreArchivo);
 		}
-
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		response.put("mensaje", "La receta no existe");
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 	}
 
 	@GetMapping("/uploads/img/{nombreFoto:.+}")
@@ -208,26 +214,39 @@ public class RecetaRestController {
 		return new ResponseEntity<Resource>(recurso, cabecera, HttpStatus.OK);
 	}
 
-	@GetMapping("/recetas/buscar/{termino}")
-	public ResponseEntity<?> buscarPorIngrediente(@PathVariable String termino) {
+	@GetMapping("/recetas/page/{page}/buscar")
+	public ResponseEntity<?> buscarPorIngredientes(@PathVariable Integer page, @RequestParam String params) {
+		String[] buscar;
+		Set<String> ingredientes = new HashSet<>();
+		if (params.contains("-")) {
+			buscar = params.split("-");
+			for (int i = 0; i < buscar.length; i++) {
+				ingredientes.add("%" + buscar[i] + "%");
+			}
+		} else {
+			ingredientes.add("%" + params + "%");
+		}
+		// filling the set with any number of items
+		recetaService.findRecetaByIngredientes(ingredientes);
 		Map<String, Object> response = new HashMap<>();
+		Pageable pageable = PageRequest.of(page, 3);
 		List<Receta> listaRecetas = null;
-		listaRecetas = recetaService.findByIngredientesContaining(termino);
+		listaRecetas = recetaService.findRecetaByIngredientes(ingredientes);
+		int size = 18;
+		int start = (int) new PageRequest(page, size).getOffset();
+		int end = (start + new PageRequest(page, size).getPageSize()) > listaRecetas.size() ? listaRecetas.size()
+				: (start + new PageRequest(page, size).getPageSize());
+		PageImpl<Receta> pageReceta = new PageImpl<Receta>(listaRecetas.subList(start, end),
+				new PageRequest(page, size), listaRecetas.size());
+
 		if (!listaRecetas.isEmpty()) {
-			response.put("mensaje", "Se han encontrado recetas con el " + termino + " buscados!");
-			response.put("receta", listaRecetas);
+			response.put("mensaje", "Se han encontrado recetas con el " + ingredientes.toString() + " buscados!");
+			response.put("receta", pageReceta);
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 		}
 		response.put("mensaje", "No se han encontrado recetas con el termino facilitado!");
-		response.put("termino", termino);
+		response.put("termino", ingredientes.toString());
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
-	
-	/*
-	@GetMapping("/recetas/page/{page}")
-	public Page<Receta> indexaa(@PathVariable Integer page) {
-		Pageable pageable = PageRequest.of(page, 6);
-		return recetaService.findAll(pageable);
-	}*/
 
 }

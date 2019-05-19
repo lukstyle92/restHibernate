@@ -1,6 +1,16 @@
 package com.recetas.spring.boot.backend.apirest.models.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,6 +26,9 @@ public class RecetaServiceImpl implements IRecetaService {
 
 	@Autowired
 	private IRecetaDAO recetaDAO;
+	
+	@PersistenceContext
+    private EntityManager entityManager;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -49,18 +62,31 @@ public class RecetaServiceImpl implements IRecetaService {
 	public void delete(Long id) {
 		// TODO Auto-generated method stub
 		recetaDAO.deleteById(id);
-	}
-
-
-	@Override
-	public List<Receta> findByIngredientesContaining(String ingrediente) {		
-		return recetaDAO.findByIngredientesContaining(ingrediente);
-	}
-
+	}	
 
 	@Override
 	public List<Receta> findByNombreContaining(String nombreReceta) {
 		return recetaDAO.findByNombreContaining(nombreReceta);
+	}
+
+
+	@Override
+	public List<Receta> findRecetaByIngredientes(Set<String> ingredientes) {		
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Receta> query = cb.createQuery(Receta.class);
+        Root<Receta> receta = query.from(Receta.class);
+ 
+        Path<String> ingredientePath = receta.get("ingredientes");
+ 
+        List<Predicate> predicates = new ArrayList<>();
+        for (String ingrediente : ingredientes) {
+            predicates.add(cb.like(ingredientePath, ingrediente));
+        }
+        query.select(receta)
+            .where(cb.or(predicates.toArray(new Predicate[predicates.size()])));
+ 
+        return entityManager.createQuery(query)
+            .getResultList();    
 	}
 
 }

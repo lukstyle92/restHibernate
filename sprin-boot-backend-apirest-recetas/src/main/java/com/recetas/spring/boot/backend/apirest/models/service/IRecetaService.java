@@ -1,6 +1,7 @@
 package com.recetas.spring.boot.backend.apirest.models.service;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +16,7 @@ public interface IRecetaService {
 
 	public Receta findById(Long id);
 
-	public List<Receta> findByIngredientesContaining(String ingrediente);
+	public List<Receta> findRecetaByIngredientes(Set<String> ingredientes);
 
 	public List<Receta> findByNombreContaining(String nombreReceta);
 

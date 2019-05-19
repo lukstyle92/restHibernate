@@ -1,14 +1,13 @@
 package com.recetas.spring.boot.backend.apirest.models.dao;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import com.recetas.spring.boot.backend.apirest.models.entity.Receta;
 
 public interface IRecetaDAO extends JpaRepository<Receta, Long>{
-	@Query(value = "SELECT * FROM RECETA WHERE INGREDIENTES LIKE %?1%", nativeQuery = true)
-	public List<Receta> findByIngredientesContaining(String ingrediente);
+	public List<Receta> findRecetaByIngredientes(Set<String> ingredientes);
 	public List<Receta> findByNombreContaining(String nombreReceta);
 }
