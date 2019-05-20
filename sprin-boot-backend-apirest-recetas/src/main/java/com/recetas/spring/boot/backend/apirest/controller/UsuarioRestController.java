@@ -63,6 +63,7 @@ public class UsuarioRestController {
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar el insert en bd");
 			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+			log.info(e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		response.put("mensaje", "El usuario ha sido creado con éxito!");

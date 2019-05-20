@@ -7,3 +7,32 @@ INSERT INTO `roles` (nombre) VALUES ('ROLE_ADMIN');
 INSERT INTO `usuarios_roles` (usuario_id, role_id) VALUES (1, 1);
 INSERT INTO `usuarios_roles` (usuario_id, role_id) VALUES (2, 2);
 INSERT INTO `usuarios_roles` (usuario_id, role_id) VALUES (2, 1);
+
+INSERT INTO `categorias` (nombre) VALUES ('Mejicana');
+INSERT INTO `categorias` (nombre) VALUES ('Mejicana');
+INSERT INTO `categorias` (nombre) VALUES ('Española');
+INSERT INTO `categorias` (nombre) VALUES ('Oriental');
+INSERT INTO `categorias` (nombre) VALUES ('Mediterranea');
+INSERT INTO `categorias` (nombre) VALUES ('Tradicional');
+INSERT INTO `categorias` (nombre) VALUES ('Postres');
+INSERT INTO `categorias` (nombre) VALUES ('Comidas');
+INSERT INTO `categorias` (nombre) VALUES ('Desayunos');
+INSERT INTO `categorias` (nombre) VALUES ('Italiana');
+INSERT INTO `categorias` (nombre) VALUES ('Bajo en calorías');
+INSERT INTO `categorias` (nombre) VALUES ('Dulce');
+INSERT INTO `categorias` (nombre) VALUES ('Salado');
+INSERT INTO `categorias` (nombre) VALUES ('Pescado');
+INSERT INTO `categorias` (nombre) VALUES ('Carne');
+
+INSERT INTO `recetas` (comensales, dificultad, ingredientes, nombre, path, preparacion, tipo) VALUES (1, 'facil', 'patata', 'patata al horno', '', 'preparacion asi y asi', 'cena');
+
+INSERT INTO `recetas_categorias` (receta_id, categoria_id) VALUES (1, 1);
+INSERT INTO `recetas_categorias` (receta_id, categoria_id) VALUES (1, 2);
+INSERT INTO `recetas_categorias` (receta_id, categoria_id) VALUES (1, 3);
+INSERT INTO `recetas_categorias` (receta_id, categoria_id) VALUES (1, 4);
+INSERT INTO `recetas_categorias` (receta_id, categoria_id) VALUES (1, 5);
+INSERT INTO `recetas_categorias` (receta_id, categoria_id) VALUES (1, 6);
+INSERT INTO `recetas_categorias` (receta_id, categoria_id) VALUES (1, 7);
+INSERT INTO `recetas_categorias` (receta_id, categoria_id) VALUES (1, 8);
+INSERT INTO `recetas_categorias` (receta_id, categoria_id) VALUES (1, 9);
+INSERT INTO `recetas_categorias` (receta_id, categoria_id) VALUES (1, 10);
