@@ -24,7 +24,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 		// todos los usuarios tendrán acceso a la ruta /api/clientes siempre y cuando la
 		// petición sea GET
 		http.authorizeRequests()
-				.antMatchers(HttpMethod.GET, "/rest/recetas/**", "/rest/recetas/page/**", "/rest/uploads/img/**",
+				.antMatchers(HttpMethod.GET, "/rest/comprobar", "/rest/recetas/**", "/rest/recetas/page/**", "/rest/uploads/img/**",
 						"/images/**")
 				.permitAll()
 				.antMatchers(HttpMethod.POST, "/rest/usuario").permitAll()

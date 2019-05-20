@@ -17,9 +17,11 @@ import org.springframework.mail.MailException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.JsonObject;
@@ -66,6 +68,14 @@ public class UsuarioRestController {
 		response.put("mensaje", "El usuario ha sido creado con éxito!");
 		response.put("usuario", usuarioNew);
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+	}
+	
+	@GetMapping("/comprobar")
+	public boolean comprobarUsuarioDisponible(@RequestParam String username) {
+		log.info(username);
+		Usuario u = null;
+		u = usuarioService.findByUsername(username);
+		return u == null;
 	}
 	
 	@ReadOnlyProperty
