@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.deser.impl.CreatorCandidate.Param;
+import com.recetas.spring.boot.backend.apirest.models.entity.Categoria;
 import com.recetas.spring.boot.backend.apirest.models.entity.Receta;
 import com.recetas.spring.boot.backend.apirest.models.service.IRecetaService;
 import com.recetas.spring.boot.backend.apirest.models.service.IUploadFileService;
@@ -248,5 +249,6 @@ public class RecetaRestController {
 		response.put("termino", ingredientes.toString());
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
+	
 
 }

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.recetas.spring.boot.backend.apirest.models.dao.IRecetaDAO;
+import com.recetas.spring.boot.backend.apirest.models.entity.Categoria;
 import com.recetas.spring.boot.backend.apirest.models.entity.Receta;
 
 @Service
@@ -56,6 +57,7 @@ public class RecetaServiceImpl implements IRecetaService {
 		// TODO Auto-generated method stub
 		return recetaDAO.save(receta);
 	}
+
 
 	@Override
 	@Transactional

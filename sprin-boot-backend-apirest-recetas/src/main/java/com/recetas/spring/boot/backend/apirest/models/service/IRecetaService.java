@@ -6,6 +6,7 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.recetas.spring.boot.backend.apirest.models.entity.Categoria;
 import com.recetas.spring.boot.backend.apirest.models.entity.Receta;
 
 public interface IRecetaService {
