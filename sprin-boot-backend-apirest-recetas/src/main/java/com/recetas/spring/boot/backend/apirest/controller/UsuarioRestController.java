@@ -18,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.recetas.spring.boot.backend.apirest.models.entity.Receta;
 import com.recetas.spring.boot.backend.apirest.models.entity.Usuario;
 import com.recetas.spring.boot.backend.apirest.models.service.IUsuarioService;
 import com.recetas.spring.boot.backend.apirest.models.service.UsuarioServiceImpl;
@@ -44,7 +46,12 @@ public class UsuarioRestController {
 	@Autowired
 	private UsuarioServiceImpl usuarioServiceImp;
 	private final Logger log = (Logger) LoggerFactory.getLogger(UsuarioRestController.class);
-	
+
+	@GetMapping("/usuario")
+	public List<Usuario> index() {
+		return usuarioService.findAll();
+	}
+
 	@PostMapping("/usuario")
 	public ResponseEntity<?> create(@Valid @RequestBody Usuario usuario, BindingResult result) {
 		Usuario usuarioNew = null;
@@ -70,7 +77,27 @@ public class UsuarioRestController {
 		response.put("usuario", usuarioNew);
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
-	
+
+	@PostMapping("/cambiar/{email}")
+	public ResponseEntity<?> updatePassword(@Valid @RequestBody Usuario usuario, @PathVariable String email) {
+		log.info(email);
+		Usuario usuarioActual = usuarioService.findByEmail(email);
+		Usuario usuarioUpdated = null;
+		Map<String, Object> response = new HashMap<>();
+		try {
+			String passwordBcrypt = passwordEncoder.encode(usuario.getPassword());
+			usuarioActual.setPassword(passwordBcrypt);
+			usuarioUpdated = usuarioService.save(usuarioActual);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al actualizar la receta en bd");
+			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		response.put("mensaje", "La contraseña ha sido actualizada con éxito!");
+		response.put("usuario", usuarioUpdated);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+	}
+
 	@GetMapping("/comprobar")
 	public boolean comprobarUsuarioDisponible(@RequestParam String username) {
 		log.info(username);
@@ -78,7 +105,7 @@ public class UsuarioRestController {
 		u = usuarioService.findByUsername(username);
 		return u == null;
 	}
-	
+
 	@ReadOnlyProperty
 	@PostMapping("/recuperar")
 	public ResponseEntity<?> recuperar(@Valid @RequestBody Mail mail) {
@@ -89,7 +116,7 @@ public class UsuarioRestController {
 		try {
 			log.info(email);
 			u = usuarioService.findByEmail(mail.getMail());
-			if(u == null) {
+			if (u == null) {
 				response.put("mensaje", "Error al intentar regenerar contraseña, mail especificado no existe.");
 				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 			}
@@ -109,25 +136,25 @@ public class UsuarioRestController {
 	}
 
 	public String generarRandomPassword(int lenght) {
-	    String password = "";
-	    for(int i = 0; i < lenght -2; i++) {
-	    	password = password + randomCharacter("abcdefghijklmnopqrstwxyzABCDEFGHIJKLMNOPQRSTUWXYZ");
-	    }
-	    String randomDigit = randomCharacter("0123456789");
-	    password = insertAtRandom(password, randomDigit);
+		String password = "";
+		for (int i = 0; i < lenght - 2; i++) {
+			password = password + randomCharacter("abcdefghijklmnopqrstwxyzABCDEFGHIJKLMNOPQRSTUWXYZ");
+		}
+		String randomDigit = randomCharacter("0123456789");
+		password = insertAtRandom(password, randomDigit);
 		return password;
 	}
-	
+
 	public String randomCharacter(String characters) {
 		int n = characters.length();
 		int r = (int) (n * Math.random());
 		return characters.substring(r, r + 1);
 	}
-	
+
 	public String insertAtRandom(String str, String toInsert) {
 		int n = str.length();
 		int r = (int) ((n + 1) * Math.random());
 		return str.substring(0, r) + toInsert + str.substring(r);
 	}
-	
+
 }

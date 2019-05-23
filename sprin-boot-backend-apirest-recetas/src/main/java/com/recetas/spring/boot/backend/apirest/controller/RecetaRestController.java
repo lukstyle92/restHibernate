@@ -14,7 +14,6 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
-import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -36,8 +35,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.deser.impl.CreatorCandidate.Param;
-import com.recetas.spring.boot.backend.apirest.models.entity.Categoria;
 import com.recetas.spring.boot.backend.apirest.models.entity.Receta;
 import com.recetas.spring.boot.backend.apirest.models.service.IRecetaService;
 import com.recetas.spring.boot.backend.apirest.models.service.IUploadFileService;

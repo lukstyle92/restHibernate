@@ -45,7 +45,7 @@ public class Usuario implements Serializable {
 	@Size(min = 4, max = 30)
 	@Column(nullable = false)
 	private String nombre;
-	
+
 	@NotEmpty
 	@Size(min = 4, max = 30)
 	@Column(nullable = false)
@@ -53,7 +53,7 @@ public class Usuario implements Serializable {
 
 	@NotEmpty
 	@Size(min = 4, max = 30)
-	@Column(nullable = false)
+	@Column(nullable = false, unique = true)
 	private String email;
 
 	@Column(name = "create_at")
@@ -65,7 +65,7 @@ public class Usuario implements Serializable {
 		createAt = new Date();
 		enabled = true;
 	}
-	
+
 	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinTable(name = "usuarios_roles", joinColumns = @JoinColumn(name = "usuario_id"), inverseJoinColumns = @JoinColumn(name = "role_id"), uniqueConstraints = {
 			@UniqueConstraint(columnNames = { "usuario_id", "role_id" }) })

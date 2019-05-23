@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.recetas.spring.boot.backend.apirest.models.dao.IUsuarioDAO;
+import com.recetas.spring.boot.backend.apirest.models.entity.Receta;
 import com.recetas.spring.boot.backend.apirest.models.entity.Usuario;
 
 @Service
@@ -77,5 +78,17 @@ public class UsuarioServiceImpl implements IUsuarioService, UserDetailsService {
 	public Usuario findByEmail(String email) {
 		// TODO Auto-generated method stub
 		return usuarioDAO.findByEmail(email);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Usuario findById(Long id) {
+		// TODO Auto-generated method stub
+		return usuarioDAO.findById(id).orElse(null);
+	}
+
+	@Override
+	public List<Usuario> findAll() {
+		return usuarioDAO.findAll();
 	}
 }
