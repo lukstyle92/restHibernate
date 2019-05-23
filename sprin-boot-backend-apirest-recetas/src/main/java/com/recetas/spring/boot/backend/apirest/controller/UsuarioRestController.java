@@ -14,9 +14,11 @@ import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -96,6 +98,23 @@ public class UsuarioRestController {
 		response.put("mensaje", "La contraseña ha sido actualizada con éxito!");
 		response.put("usuario", usuarioUpdated);
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+	}
+	
+	@DeleteMapping("/usuario/{email}")
+	public ResponseEntity<?> delete(@PathVariable String email) {
+		Map<String, Object> response = new HashMap<>();
+		try {
+			Usuario usuario = usuarioService.findByEmail(email);
+			if (usuario != null) {
+				usuarioService.delete(usuario.getId());
+			}
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al eliminar la receta en bd");
+			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		response.put("mensaje", "Usuario borrado con éxito.");
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
 	@GetMapping("/comprobar")

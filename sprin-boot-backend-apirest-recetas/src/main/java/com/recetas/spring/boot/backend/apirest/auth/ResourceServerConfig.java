@@ -25,10 +25,12 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 		// petición sea GET
 		http.authorizeRequests()
 				.antMatchers(HttpMethod.GET, "/rest/usuario", "/rest/comprobar", "/rest/recetas/**",
-						"/rest/recetas/page/**", "/rest/uploads/img/**", "/images/**")
-				.permitAll().antMatchers(HttpMethod.POST, "/rest/usuario")
-				.permitAll().antMatchers(HttpMethod.POST, "/rest/cambiar")
-				.permitAll().antMatchers(HttpMethod.POST, "/rest/cambiar/**").permitAll().anyRequest().authenticated().and().cors()
+						"/rest/recetas/page/**", "/rest/uploads/img/**", "/images/**").permitAll()
+				.antMatchers(HttpMethod.DELETE, "/rest/usuario/**").permitAll()
+				.antMatchers(HttpMethod.POST, "/rest/recuperar").permitAll()
+				.antMatchers(HttpMethod.POST, "/rest/usuario").permitAll()
+				.antMatchers(HttpMethod.POST, "/rest/cambiar").permitAll()
+				.antMatchers(HttpMethod.POST, "/rest/cambiar/**").permitAll().anyRequest().authenticated().and().cors()
 				.configurationSource(corsConfigurationSource());
 	}
 

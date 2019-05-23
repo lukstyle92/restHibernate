@@ -91,4 +91,10 @@ public class UsuarioServiceImpl implements IUsuarioService, UserDetailsService {
 	public List<Usuario> findAll() {
 		return usuarioDAO.findAll();
 	}
+
+	@Override
+	public void delete(Long id) {
+		usuarioDAO.deleteById(id);
+		
+	}
 }

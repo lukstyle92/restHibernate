@@ -6,11 +6,14 @@ import com.recetas.spring.boot.backend.apirest.models.entity.Usuario;
 
 public interface IUsuarioService {
 	public List<Usuario> findAll();
+
 	public Usuario findByUsername(String username);
-	
+
 	public Usuario findById(Long id);
 
 	public Usuario save(Usuario usuario);
-	
+
+	public void delete(Long id);
+
 	public Usuario findByEmail(String email);
 }
