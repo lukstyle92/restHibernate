@@ -49,12 +49,12 @@ public class Receta implements Serializable {
 	private int comensales;
 
 	@NotEmpty
-	@Size(min = 10)
+	@Size(max = 99999)
 	@Column(nullable = false)
 	private String preparacion;
 
 	@NotEmpty
-	@Size(min = 4)
+	@Size(max = 99999)
 	@Column(nullable = false)
 	private String ingredientes;
 

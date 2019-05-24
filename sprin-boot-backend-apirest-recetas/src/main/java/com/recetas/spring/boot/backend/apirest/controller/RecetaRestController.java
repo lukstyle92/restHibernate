@@ -86,7 +86,7 @@ public class RecetaRestController {
 		return new ResponseEntity<Receta>(receta, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	//@Secured({ "ROLE_ADMIN" })
 	// Método POST que inserta una receta nueva
 	@PostMapping("/recetas")
 	public ResponseEntity<?> create(@Valid @RequestBody Receta receta, BindingResult result) {
