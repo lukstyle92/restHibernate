@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -246,6 +247,15 @@ public class RecetaRestController {
 		response.put("termino", ingredientes.toString());
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
-	
+
+	@GetMapping("/aleatorio")
+	public Receta recetaAleatoria() {
+		List<Receta> lista = recetaService.findAll();
+		Random r = new Random();
+		int low = 0;
+		int high = lista.size() - 1;
+		int random = r.nextInt(high - low) + low;
+		return lista.get(random);
+	}
 
 }
