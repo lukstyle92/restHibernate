@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,10 +42,14 @@ import com.recetas.spring.boot.backend.apirest.models.entity.Receta;
 import com.recetas.spring.boot.backend.apirest.models.service.IRecetaService;
 import com.recetas.spring.boot.backend.apirest.models.service.IUploadFileService;
 
+import ch.qos.logback.classic.Logger;
+
 @CrossOrigin(origins = { "http://localhost:4200" })
 @RestController
 @RequestMapping("/rest")
 public class RecetaRestController {
+
+	private final Logger log = (Logger) LoggerFactory.getLogger(RecetaRestController.class);
 
 	@Autowired
 	private IRecetaService recetaService;
@@ -59,7 +65,7 @@ public class RecetaRestController {
 
 	@GetMapping("/recetas/page/{page}")
 	public Page<Receta> index(@PathVariable Integer page) {
-		Pageable pageable = PageRequest.of(page, 18);
+		Pageable pageable = PageRequest.of(page, 36,Sort.by("createAt").descending());
 		return recetaService.findAll(pageable);
 	}
 
@@ -86,7 +92,7 @@ public class RecetaRestController {
 		return new ResponseEntity<Receta>(receta, HttpStatus.OK);
 	}
 
-	//@Secured({ "ROLE_ADMIN" })
+	//@Secured({ "ROLE_ADMIN", "ROLE_USER" })
 	// Método POST que inserta una receta nueva
 	@PostMapping("/recetas")
 	public ResponseEntity<?> create(@Valid @RequestBody Receta receta, BindingResult result) {
@@ -98,6 +104,7 @@ public class RecetaRestController {
 					.map(err -> "El campo '" + err.getField() + "' " + err.getDefaultMessage())
 					.collect(Collectors.toList());
 			response.put("errors", errors);
+			log.info(result.getFieldError().toString());
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 		try {
@@ -215,23 +222,34 @@ public class RecetaRestController {
 
 	@GetMapping("/recetas/page/{page}/buscar")
 	public ResponseEntity<?> buscarPorIngredientes(@PathVariable Integer page, @RequestParam String params) {
-		String[] buscar;
+		String[] buscar = null;
 		Set<String> ingredientes = new HashSet<>();
 		if (params.contains("-")) {
-			buscar = params.split("-");
+			params = params.trim().replace("-", " ");
+			buscar = params.split(" ");
 			for (int i = 0; i < buscar.length; i++) {
+				if(buscar[i].endsWith("s")) {
+					buscar[i] = buscar[i].substring(0, params.length() -1);
+				}
 				ingredientes.add("%" + buscar[i] + "%");
 			}
+			log.info(ingredientes.toString());
 		} else {
+			if(params.endsWith("s")) {
+				params = params.substring(0, params.length() -1);
+			}
 			ingredientes.add("%" + params + "%");
 		}
-		// filling the set with any number of items
-		recetaService.findRecetaByIngredientes(ingredientes);
 		Map<String, Object> response = new HashMap<>();
 		Pageable pageable = PageRequest.of(page, 3);
+		List<Receta> listaNombre = null;
 		List<Receta> listaRecetas = null;
-		listaRecetas = recetaService.findRecetaByIngredientes(ingredientes);
-		int size = 18;
+		listaRecetas = recetaService.findRecetaByIngredientesIn(ingredientes);
+		listaNombre = recetaService.findRecetaByNombreIn(ingredientes);
+		if(!listaNombre.isEmpty()) {
+			listaRecetas.addAll(listaNombre);
+		}
+		int size = 36;
 		int start = (int) new PageRequest(page, size).getOffset();
 		int end = (start + new PageRequest(page, size).getPageSize()) > listaRecetas.size() ? listaRecetas.size()
 				: (start + new PageRequest(page, size).getPageSize());

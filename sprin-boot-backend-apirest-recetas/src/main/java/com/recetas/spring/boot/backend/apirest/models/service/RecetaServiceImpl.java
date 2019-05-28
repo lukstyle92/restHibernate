@@ -66,13 +66,7 @@ public class RecetaServiceImpl implements IRecetaService {
 	}	
 
 	@Override
-	public List<Receta> findByNombreContaining(String nombreReceta) {
-		return recetaDAO.findByNombreContaining(nombreReceta);
-	}
-
-
-	@Override
-	public List<Receta> findRecetaByIngredientes(Set<String> ingredientes) {		
+	public List<Receta> findRecetaByIngredientesIn(Set<String> ingredientes) {		
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Receta> query = cb.createQuery(Receta.class);
         Root<Receta> receta = query.from(Receta.class);
@@ -84,10 +78,30 @@ public class RecetaServiceImpl implements IRecetaService {
             predicates.add(cb.like(ingredientePath, ingrediente));
         }
         query.select(receta)
-            .where(cb.or(predicates.toArray(new Predicate[predicates.size()])));
+            .where(cb.and(predicates.toArray(new Predicate[predicates.size()])));
  
         return entityManager.createQuery(query)
             .getResultList();    
+	}
+
+
+	@Override
+	public List<Receta> findRecetaByNombreIn(Set<String> ingredientes) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Receta> query = cb.createQuery(Receta.class);
+        Root<Receta> receta = query.from(Receta.class);
+ 
+        Path<String> nombrePath = receta.get("nombre");
+ 
+        List<Predicate> predicates = new ArrayList<>();
+        for (String ingrediente : ingredientes) {
+            predicates.add(cb.like(nombrePath, ingrediente));
+        }
+        query.select(receta)
+            .where(cb.and(predicates.toArray(new Predicate[predicates.size()])));
+ 
+        return entityManager.createQuery(query)
+            .getResultList(); 
 	}
 
 }

@@ -124,6 +124,14 @@ public class UsuarioRestController {
 		u = usuarioService.findByUsername(username);
 		return u == null;
 	}
+	
+	@GetMapping("/comprobarr")
+	public boolean comprobarMailDisponible(@RequestParam String email) {
+		log.info(email);
+		Usuario u = null;
+		u = usuarioService.findByEmail(email);
+		return u == null;
+	}
 
 	@ReadOnlyProperty
 	@PostMapping("/recuperar")

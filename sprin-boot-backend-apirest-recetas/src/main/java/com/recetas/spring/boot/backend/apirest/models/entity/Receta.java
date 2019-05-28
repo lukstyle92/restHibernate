@@ -32,7 +32,7 @@ public class Receta implements Serializable {
 	private long id;
 
 	@NotEmpty
-	@Size(min = 4, max = 30)
+	@Size(min = 4, max = 100)
 	@Column(nullable = false)
 	private String nombre;
 
@@ -59,14 +59,15 @@ public class Receta implements Serializable {
 	private String ingredientes;
 
 	private String path;
+	
+	private String video;
 
 	@Column(name = "create_at")
-	@Temporal(TemporalType.DATE)
-	private Date createAt;
+	private long createAt;
 
 	@PrePersist
 	public void prePersist() {
-		createAt = new Date();
+		createAt = new Date().getTime();
 	}
 	
 	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -148,11 +149,11 @@ public class Receta implements Serializable {
 		this.path = path;
 	}
 
-	public Date getCreateAt() {
+	public long getCreateAt() {
 		return createAt;
 	}
 
-	public void setCreateAt(Date createAt) {
+	public void setCreateAt(long createAt) {
 		this.createAt = createAt;
 	}
 
@@ -162,6 +163,15 @@ public class Receta implements Serializable {
 
 	public void setCategorias(List<Categoria> categorias) {
 		this.categorias = categorias;
+	}
+	
+
+	public String getVideo() {
+		return video;
+	}
+
+	public void setVideo(String urlVideo) {
+		this.video = urlVideo;
 	}
 
 	/**

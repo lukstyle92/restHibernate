@@ -16,9 +16,9 @@ public interface IRecetaService {
 
 	public Receta findById(Long id);
 
-	public List<Receta> findRecetaByIngredientes(Set<String> ingredientes);
+	public List<Receta> findRecetaByIngredientesIn(Set<String> ingredientes);
 
-	public List<Receta> findByNombreContaining(String nombreReceta);
+	public List<Receta> findRecetaByNombreIn(Set<String> ingredientes);;
 
 	public Receta save(Receta receta);
 
