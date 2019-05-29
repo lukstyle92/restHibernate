@@ -182,6 +182,7 @@ public class RecetaRestController {
 	public ResponseEntity<?> upload(@RequestParam("archivo") MultipartFile archivo, @RequestParam("id") Long id) {
 		Map<String, Object> response = new HashMap<>();
 		Receta receta = recetaService.findById(id);
+		log.info(archivo.toString());
 		if (receta != null) {
 			if (!archivo.isEmpty()) {
 				String nombreArchivo = null;
