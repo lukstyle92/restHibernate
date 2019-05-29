@@ -69,7 +69,6 @@ public class RecetaRestController {
 		return recetaService.findAll(pageable);
 	}
 
-	@Secured({ "ROLE_ADMIN", "ROLE_USER" })
 	// Método GET que devuelve una receta buscada por ID
 	@GetMapping("/recetas/{id}")
 	// @ResponseStatus(HttpStatus.OK)
@@ -92,7 +91,7 @@ public class RecetaRestController {
 		return new ResponseEntity<Receta>(receta, HttpStatus.OK);
 	}
 
-	//@Secured({ "ROLE_ADMIN", "ROLE_USER" })
+	@Secured({ "ROLE_ADMIN", "ROLE_USER" })
 	// Método POST que inserta una receta nueva
 	@PostMapping("/recetas")
 	public ResponseEntity<?> create(@Valid @RequestBody Receta receta, BindingResult result) {

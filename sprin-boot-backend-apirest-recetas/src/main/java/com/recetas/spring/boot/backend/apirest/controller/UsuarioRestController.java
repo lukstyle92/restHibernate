@@ -49,6 +49,7 @@ public class UsuarioRestController {
 	private UsuarioServiceImpl usuarioServiceImp;
 	private final Logger log = (Logger) LoggerFactory.getLogger(UsuarioRestController.class);
 
+	@Secured({ "ROLE_ADMIN" })
 	@GetMapping("/usuario")
 	public List<Usuario> index() {
 		return usuarioService.findAll();
@@ -80,6 +81,7 @@ public class UsuarioRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
+	@Secured({ "ROLE_ADMIN", "ROLE_USER" })
 	@PostMapping("/cambiar/{email}")
 	public ResponseEntity<?> updatePassword(@Valid @RequestBody Usuario usuario, @PathVariable String email) {
 		log.info(email);
@@ -117,6 +119,7 @@ public class UsuarioRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@GetMapping("/comprobar")
 	public boolean comprobarUsuarioDisponible(@RequestParam String username) {
 		log.info(username);
