@@ -1,6 +1,7 @@
 package com.recetas.spring.boot.backend.apirest.models.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -19,8 +20,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.recetas.spring.boot.backend.apirest.models.dao.IUsuarioDAO;
+import com.recetas.spring.boot.backend.apirest.models.dao.IUsuarioRoleDAO;
 import com.recetas.spring.boot.backend.apirest.models.entity.Receta;
+import com.recetas.spring.boot.backend.apirest.models.entity.Role;
 import com.recetas.spring.boot.backend.apirest.models.entity.Usuario;
+import com.recetas.spring.boot.backend.apirest.models.entity.UsuarioRole;
 
 @Service
 public class UsuarioServiceImpl implements IUsuarioService, UserDetailsService {
@@ -30,7 +34,14 @@ public class UsuarioServiceImpl implements IUsuarioService, UserDetailsService {
 	@Autowired
 	private IUsuarioDAO usuarioDAO;
 
+	@Autowired
+	private IUsuarioRoleDAO usuarioRoleDAO;
+
 	private JavaMailSender javaMailSender;
+
+	public UsuarioServiceImpl() {
+		super();
+	}
 
 	@Autowired
 	public UsuarioServiceImpl(JavaMailSender javaMailSender) {
@@ -95,6 +106,29 @@ public class UsuarioServiceImpl implements IUsuarioService, UserDetailsService {
 	@Override
 	public void delete(Long id) {
 		usuarioDAO.deleteById(id);
-		
+
 	}
+
+	@Override
+	public Role findByNombre(String role) {
+		return usuarioDAO.findByNombre(role);
+	}
+
+	@Override
+	public UsuarioRole save(UsuarioRole usuarioRole) {
+		return usuarioDAO.save(usuarioRole);
+	}
+
+	@Override
+	public void deleteUsuarioRole(Long id) {
+		usuarioRoleDAO.deleteById(id);
+	}
+
+	@Override
+	public UsuarioRole findRoleById(Long id) {
+		Optional<UsuarioRole> optinalEntity = usuarioRoleDAO.findById(id);
+		UsuarioRole usuarioRole = optinalEntity.get();
+		return usuarioRole;
+	}
+
 }

@@ -147,6 +147,7 @@ public class RecetaRestController {
 			recetaActual.setPath(receta.getPath());
 			recetaUpdated = recetaService.save(recetaActual);
 		} catch (DataAccessException e) {
+			log.info(e.getMessage());
 			response.put("mensaje", "Error al actualizar la receta en bd");
 			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -181,7 +182,6 @@ public class RecetaRestController {
 	public ResponseEntity<?> upload(@RequestParam("archivo") MultipartFile archivo, @RequestParam("id") Long id) {
 		Map<String, Object> response = new HashMap<>();
 		Receta receta = recetaService.findById(id);
-		log.info(archivo.toString());
 		if (receta != null) {
 			if (!archivo.isEmpty()) {
 				String nombreArchivo = null;
@@ -228,8 +228,10 @@ public class RecetaRestController {
 			params = params.trim().replace("-", " ");
 			buscar = params.split(" ");
 			for (int i = 0; i < buscar.length; i++) {
-				if(buscar[i].endsWith("s")) {
-					buscar[i] = buscar[i].substring(0, params.length() -1);
+				if(buscar[i].endsWith("es")) {
+					buscar[i] = buscar[i].substring(0, buscar[i].length() -2);
+				}else if(buscar[i].endsWith("s")) {
+					buscar[i] = buscar[i].substring(0, buscar[i].length() -1);
 				}
 				ingredientes.add("%" + buscar[i] + "%");
 			}

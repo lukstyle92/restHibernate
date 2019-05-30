@@ -75,6 +75,27 @@ public class Receta implements Serializable {
 			@UniqueConstraint(columnNames = { "receta_id", "categoria_id" }) })
 	private List<Categoria> categorias;
 
+	public Receta() {
+	}
+	
+	public Receta(long id, @NotEmpty @Size(min = 4, max = 100) String nombre, @NotEmpty String tipo,
+			@NotEmpty String dificultad, @DecimalMin("1") int comensales,
+			@NotEmpty @Size(max = 99999) String preparacion, @NotEmpty @Size(max = 99999) String ingredientes,
+			String path, String video, long createAt, List<Categoria> categorias) {
+		super();
+		this.id = id;
+		this.nombre = nombre;
+		this.tipo = tipo;
+		this.dificultad = dificultad;
+		this.comensales = comensales;
+		this.preparacion = preparacion;
+		this.ingredientes = ingredientes;
+		this.path = path;
+		this.video = video;
+		this.createAt = createAt;
+		this.categorias = categorias;
+	}
+
 	/*
 	 * @Column(name="create_at")
 	 * 

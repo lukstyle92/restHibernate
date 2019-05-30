@@ -71,6 +71,26 @@ public class Usuario implements Serializable {
 			@UniqueConstraint(columnNames = { "usuario_id", "role_id" }) })
 	private List<Role> roles;
 
+	public Usuario() {
+
+	}
+
+	public Usuario(Long id, @NotEmpty @Size(min = 4, max = 30) String username, @NotEmpty String password,
+			Boolean enabled, @NotEmpty @Size(min = 4, max = 30) String nombre,
+			@NotEmpty @Size(min = 4, max = 30) String apellido, @NotEmpty @Size(min = 4, max = 30) String email,
+			Date createAt, List<Role> roles) {
+		super();
+		this.id = id;
+		this.username = username;
+		this.password = password;
+		this.enabled = enabled;
+		this.nombre = nombre;
+		this.apellido = apellido;
+		this.email = email;
+		this.createAt = createAt;
+		this.roles = roles;
+	}
+
 	public Long getId() {
 		return id;
 	}

@@ -24,7 +24,7 @@ INSERT INTO `categorias` (nombre) VALUES ('Salado');
 INSERT INTO `categorias` (nombre) VALUES ('Pescado');
 INSERT INTO `categorias` (nombre) VALUES ('Carne');
 
-INSERT INTO `recetas` (comensales, dificultad, ingredientes, nombre, path, preparacion, tipo) VALUES (1, 'facil', 'patata', 'patata al horno', '', 'preparacion asi y asi', 'cena');
+INSERT INTO `recetas` (create_at, comensales, dificultad, ingredientes, nombre, path, preparacion, tipo) VALUES (12312432, 1, 'facil', 'patata', 'patata al horno', '', 'preparacion asi y asi', 'cena');
 
 INSERT INTO `recetas_categorias` (receta_id, categoria_id) VALUES (1, 1);
 INSERT INTO `recetas_categorias` (receta_id, categoria_id) VALUES (1, 2);

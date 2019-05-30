@@ -1,5 +1,6 @@
 package com.recetas.spring.boot.backend.apirest.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.recetas.spring.boot.backend.apirest.models.entity.Receta;
+import com.recetas.spring.boot.backend.apirest.models.entity.Role;
 import com.recetas.spring.boot.backend.apirest.models.entity.Usuario;
+import com.recetas.spring.boot.backend.apirest.models.entity.UsuarioRole;
 import com.recetas.spring.boot.backend.apirest.models.service.IUsuarioService;
 import com.recetas.spring.boot.backend.apirest.models.service.UsuarioServiceImpl;
 import com.recetas.spring.boot.backend.apirest.models.utility.Mail;
@@ -58,6 +61,8 @@ public class UsuarioRestController {
 	@PostMapping("/usuario")
 	public ResponseEntity<?> create(@Valid @RequestBody Usuario usuario, BindingResult result) {
 		Usuario usuarioNew = null;
+		UsuarioRole usuarioRole = new UsuarioRole();
+		UsuarioRole usuarioRoleNew = null;
 		Map<String, Object> response = new HashMap<>();
 		if (result.hasErrors()) {
 			List<String> errors = result.getFieldErrors().stream()
@@ -70,6 +75,9 @@ public class UsuarioRestController {
 			String passwordBcrypt = passwordEncoder.encode(usuario.getPassword());
 			usuario.setPassword(passwordBcrypt);
 			usuarioNew = usuarioService.save(usuario);
+			usuarioRole.setRole_id((long)1);
+			usuarioRole.setUsuario_id(usuarioNew.getId());
+			usuarioRoleNew = usuarioService.save(usuarioRole);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar el insert en bd");
 			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
@@ -81,18 +89,20 @@ public class UsuarioRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
-	@Secured({ "ROLE_ADMIN", "ROLE_USER" })
+	//@Secured({ "ROLE_ADMIN", "ROLE_USER" })
 	@PostMapping("/cambiar/{email}")
-	public ResponseEntity<?> updatePassword(@Valid @RequestBody Usuario usuario, @PathVariable String email) {
+	public ResponseEntity<?> updatePassword(@Valid @RequestBody String password, @PathVariable String email) {
 		log.info(email);
 		Usuario usuarioActual = usuarioService.findByEmail(email);
 		Usuario usuarioUpdated = null;
 		Map<String, Object> response = new HashMap<>();
 		try {
-			String passwordBcrypt = passwordEncoder.encode(usuario.getPassword());
+			String passwordBcrypt = passwordEncoder.encode(password);
 			usuarioActual.setPassword(passwordBcrypt);
 			usuarioUpdated = usuarioService.save(usuarioActual);
 		} catch (DataAccessException e) {
+			log.info("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+			;
 			response.put("mensaje", "Error al actualizar la receta en bd");
 			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -101,13 +111,15 @@ public class UsuarioRestController {
 		response.put("usuario", usuarioUpdated);
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
-	
+
 	@DeleteMapping("/usuario/{email}")
 	public ResponseEntity<?> delete(@PathVariable String email) {
 		Map<String, Object> response = new HashMap<>();
 		try {
 			Usuario usuario = usuarioService.findByEmail(email);
-			if (usuario != null) {
+			UsuarioRole role = usuarioService.findRoleById(usuario.getId());
+			if (usuario != null && role != null) {
+				usuarioService.deleteUsuarioRole(role.getId());
 				usuarioService.delete(usuario.getId());
 			}
 		} catch (DataAccessException e) {
@@ -127,7 +139,7 @@ public class UsuarioRestController {
 		u = usuarioService.findByUsername(username);
 		return u == null;
 	}
-	
+
 	@GetMapping("/comprobarr")
 	public boolean comprobarMailDisponible(@RequestParam String email) {
 		log.info(email);
